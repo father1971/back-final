@@ -1,0 +1,15 @@
+{
+    "editor.formatOnSave": true,
+    "typescript.tsdk": "node_modules/typescript/lib",
+    "god.tsconfig": "./tsconfig.json",
+    "cSpell.words": ["BSALL", "DATAMATRIX", "firstname", "hotjar",
+    "lastname"],
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "findUnusedExports.detectCircularImports": true
+    }
