@@ -3,8 +3,13 @@ import dotenv from 'dotenv';
 import bodyParser from 'body-parser';
 import cors from 'cors';
 import { createClient } from 'redis';
+
 dotenv.config();
 const app = express();
+
+const redisClient = createClient();
+const connection = redisClient.connect();
+
 app.use(cors());
 app.use(bodyParser.json());
 app.use(
