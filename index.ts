@@ -9,6 +9,14 @@ import { uuid } from 'uuidv4';
 dotenv.config();
 const app = express();
 
+app.use(cors());
+app.use(bodyParser.json());
+app.use(
+  bodyParser.urlencoded({
+    extended: true,
+  })
+);
+
 const redisClient = createClient();
 const connection = redisClient.connect();
 
@@ -47,13 +55,6 @@ app.post('/tasks/', async function (request, response) {
   response.send(parsedTasks);
 });
 
-app.use(cors());
-app.use(bodyParser.json());
-app.use(
-  bodyParser.urlencoded({
-    extended: true,
-  })
-);
 app.get('/', function (request, response) {
   response.send('Я живой!');
 });
