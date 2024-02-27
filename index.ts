@@ -3,12 +3,49 @@ import dotenv from 'dotenv';
 import bodyParser from 'body-parser';
 import cors from 'cors';
 import { createClient } from 'redis';
+import { Task } from './commonTypes';
+import { uuid } from 'uuidv4';
 
 dotenv.config();
 const app = express();
 
 const redisClient = createClient();
 const connection = redisClient.connect();
+
+app.post('/tasks/', async function (request, response) {
+  if (
+    typeof request.body.name !== 'string' ||
+    typeof request.body.completed !== 'boolean' ||
+    typeof request.body.deadline !== 'string' ||
+    isNaN(new Date(request.body.deadline).getTime())
+  ) {
+    response.send(400);
+    return;
+  }
+
+  const task: Task = {
+    id: uuid(),
+    name: request.body.name,
+    completed: request.body.completed,
+    deadline: request.body.deadline,
+  };
+
+  const redis = await connection;
+  const savedTasks = await redis.get('tasks');
+
+  if (savedTasks === null) {
+    const taskList = [task];
+    await redis.set('tasks', JSON.stringify(taskList));
+
+    response.send(taskList);
+    return;
+  }
+  const parsedTasks: Task[] = JSON.parse(savedTasks);
+  parsedTasks.push(task);
+  await redis.set('tasks', JSON.stringify(parsedTasks));
+
+  response.send(parsedTasks);
+});
 
 app.use(cors());
 app.use(bodyParser.json());
