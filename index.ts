@@ -20,6 +20,19 @@ app.use(
 const redisClient = createClient();
 const connection = redisClient.connect();
 
+app.get('/tasks/', async function (request, response) {
+  const redis = await connection;
+  const savedTasks = await redis.get('tasks');
+
+  if (savedTasks === null) {
+    response.send([]);
+    return;
+  }
+
+  const parsedTasks: Task[] = JSON.parse(savedTasks);
+  response.send(parsedTasks);
+});
+
 app.post('/tasks/', async function (request, response) {
   if (
     typeof request.body.name !== 'string' ||
