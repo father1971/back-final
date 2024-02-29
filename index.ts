@@ -68,6 +68,44 @@ app.post('/tasks/', async function (request, response) {
   response.send(parsedTasks);
 });
 
+app.delete('/tasks/:id', async function (request, response) {
+  const id = request.params.id;
+
+  const redis = await connection;
+  const savedTasks = await redis.get('tasks');
+
+  if (savedTasks === null) {
+    response.send(404);
+    return;
+  }
+
+  const parsedTasks: Task[] = JSON.parse(savedTasks);
+
+  const taskToDelete = parsedTasks.find(function (task) {
+    if (task.id === id) {
+      return true;
+    } else {
+      return false;
+    }
+  });
+
+  if (taskToDelete === undefined) {
+    response.send(404);
+    return;
+  }
+
+  const keptTasks = parsedTasks.filter(function (task) {
+    if (task.id !== id) {
+      return true;
+    } else {
+      return false;
+    }
+  });
+
+  await redis.set('tasks', JSON.stringify(keptTasks));
+  response.send(keptTasks);
+});
+
 app.get('/', function (request, response) {
   response.send('Я живой!');
 });
