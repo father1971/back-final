@@ -106,6 +106,71 @@ app.delete('/tasks/:id', async function (request, response) {
   response.send(keptTasks);
 });
 
+app.put('/tasks/:id', async function (request, response) {
+  const id = request.params.id;
+  const redis = await connection;
+
+  const savedTasks = await redis.get('tasks');
+
+  if (savedTasks === null) {
+    response.send(404);
+    return;
+  }
+
+  const parsedTasks: Task[] = JSON.parse(savedTasks);
+  const taskToChange = parsedTasks.find(function (task) {
+    if (task.id === id) {
+      return true;
+    } else {
+      return false;
+    }
+  });
+
+  if (taskToChange === undefined) {
+    response.send(404);
+    return;
+  }
+
+  if (
+    typeof request.body.name !== 'undefined' &&
+    typeof request.body.name !== 'string'
+  ) {
+    response.send(400);
+    return;
+  }
+
+  if (
+    typeof request.body.completed !== 'undefined' &&
+    typeof request.body.completed !== 'boolean'
+  ) {
+    response.send(400);
+    return;
+  }
+
+  if (
+    typeof request.body.deadline !== 'undefined' &&
+    (typeof request.body.deadline !== 'string' ||
+      isNaN(new Date(request.body.deadline).getTime()))
+  ) {
+    response.send(400);
+    return;
+  }
+
+  const newTask: Task = {
+    id: taskToChange.id,
+    name: request.body.name ?? taskToChange.name,
+    completed: request.body.completed ?? taskToChange.completed,
+    deadline: request.body.deadline ?? taskToChange.deadline,
+  };
+
+  const taskToChangeIndex = parsedTasks.indexOf(taskToChange);
+  parsedTasks.splice(taskToChangeIndex, 1, newTask);
+
+  await redis.set('tasks', JSON.stringify(parsedTasks));
+
+  response.send(parsedTasks);
+});
+
 app.get('/', function (request, response) {
   response.send('Я живой!');
 });
