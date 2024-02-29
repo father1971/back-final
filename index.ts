@@ -9,9 +9,6 @@ import { uuid } from 'uuidv4';
 dotenv.config();
 const app = express();
 
-const redisClient = createClient();
-const connection = redisClient.connect();
-
 app.use(cors());
 app.use(bodyParser.json());
 app.use(
@@ -19,6 +16,9 @@ app.use(
     extended: true,
   })
 );
+
+const redisClient = createClient();
+const connection = redisClient.connect();
 
 app.get('/tasks/', async function (request, response) {
   const redis = await connection;
